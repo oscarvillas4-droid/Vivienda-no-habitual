@@ -142,6 +142,45 @@ conserva solo en las series municipales, donde el módulo no siempre cubre.
 
 ---
 
+### 4 quinquies. Del ingreso al beneficio (script 04)
+
+Las métricas del informe principal son de **ingresos íntegros** (c.102), igual
+que la estadística oficial que se replica. El script `04_beneficio_modalidades.R`
+añade la capa de rentabilidad, expresada en la **misma unidad que el módulo 2
+del informe —por declarante—**, sumando para cada uno lo declarado en todas sus
+viviendas de la modalidad; la hoja `Por_vivienda` ofrece la misma escalera por
+vivienda entera al 100 % de titularidad (la unidad del contraste con la AEAT) y
+una tercera por día de alquiler. Las tres se publican juntas para que la
+comparación sea explícita: beneficio bruto = **rendimiento neto fiscal**
+(c.149 en 2023; **P70** en 2016), es decir, ingresos menos todos los gastos
+deducibles según la fórmula del Modelo 100; y beneficio neto = bruto menos el
+IRPF estimado al **tipo marginal deducido del propio panel**: el `01c` extrae
+del fichero 4 la base liquidable general sometida a gravamen y las cuotas
+íntegras estatal y autonómica de cada declarante (casillas 0505/0545/0546 en
+2023; 450/499/500 en 2016), y el `04` estima el tipo marginal **por comunidad
+autónoma y ejercicio** como la derivada de la cuota íntegra respecto de la base
+liquidable en tramos finos. Así se recoge la escala autonómica realmente
+aplicada en cada territorio —que difiere entre comunidades y años— sin imponer
+ninguna tabla externa. Si el fichero 4 no está disponible, el script avisa y
+recurre a la escala general del ejercicio como aproximación.
+
+El impuesto se aplica sobre la base gravada, con la reducción del art.
+23.2 (c.150 / P71, solo vivienda habitual) y la imputación de rentas por los
+días no arrendados **tal como la declaró** cada contribuyente (c.89 / P59).
+
+El fichero 8 de 2016 usa otra numeración (P51-P74) para las mismas magnitudes
+—verificada con la relación de casillas de ese ejercicio—, de modo que el
+`01c` las exporta con nombres homogéneos y la comparación 2016-2023 es posible
+**tanto en beneficio bruto como neto**: cada ejercicio se grava con su propia
+escala del IRPF (2016: 19/24/30/37/45 %; 2023: la misma más el tramo del 47 %
+desde 300.000 €) y con la renta del declarante de ese mismo año, de modo que
+los marcos fiscales no se mezclan. **Límite:** el beneficio es fiscal, no económico; los
+costes no deducibles o no declarados (comisiones de plataforma, limpieza,
+gestión, tiempo propio), más frecuentes en el alquiler no habitual, no son
+observables, y los intereses y reparaciones tienen tope anual con diferimiento
+a cuatro años. El diferencial de beneficio estimado es, por tanto, una **cota
+superior** de la ventaja real de la vivienda no habitual.
+
 ## 5. Validación
 
 | Nivel | Resultado |
@@ -159,6 +198,22 @@ intervalo), `Mapa_divergencias` (origen probable de cada desviación) y
 para explotación posterior con geografía coherente con la publicada).
 
 ---
+
+### 5 bis. Cuantificación del error territorial (script 03)
+
+El script `03_errores_territoriales.R` descompone y mide el error de la
+estimación de vivienda no habitual en cada nivel territorial: **E1,
+clasificación** — la desviación sistemática frente al ancla oficial de la AEAT
+(nacional, CCAA y provincia; a nivel nacional el muestreo es despreciable y la
+localización no interviene, de modo que la desviación nacional es una medida
+casi pura del error de los filtros); **E2, localización** — la fracción sin
+cruce con el módulo inmobiliario, su perfil (¿difieren las no localizadas?) y
+la cota provincial de reasignación; y **E3, muestreo** — CV e intervalos al
+95 % por bootstrap de declarantes completos, único error medible a nivel
+municipal, donde no existe ancla oficial y el error de clasificación se hereda
+del provincial como cota. Cada celda recibe un semáforo (VERDE CV ≤ 5 % y
+desviación ≤ 10 % o dentro del IC; ÁMBAR CV ≤ 15 %, publicar con IC; ROJO
+resto), operativizando qué desagregación es científicamente asumible.
 
 ## 6. Límites y por qué son límites
 
@@ -204,6 +259,17 @@ arrendamiento turístico ejercido como actividad económica y sociedades, que no
 tributan en este fichero.
 
 ---
+
+### 6 bis. Consolidación de contratos múltiples
+
+Cuando un inmueble tiene varios contratos en el ejercicio, el `01b` consolida
+sus casillas en una sola fila: **suma** los importes de días, ingresos y gastos,
+y toma el **máximo** entre contratos en las partidas de valor catastral y de
+adquisición (casillas 123, 124 y 126), dejando la celda **vacía** —no a cero—
+cuando no hay importe. Esta regla no es un detalle menor: el valor catastral
+entra en los candados de plausibilidad de vivienda, de modo que consolidarlo de
+otra forma desplaza algunos miles de viviendas entre categorías. Por eso el
+`01c` no reescribe nunca esas columnas y se limita a añadir las que falten.
 
 ## 7. Reproducibilidad
 
